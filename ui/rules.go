@@ -1,51 +1,11 @@
-package main
+package ui
 
 import (
-	"fmt"
+	"expert-system/models"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
-
-func InitUI() *tview.Application {
-	app := tview.NewApplication()
-
-	pages := tview.NewPages()
-
-	codeEditor := createCodeEditor()
-	position := createPositionView()
-	rulesList := createRulesListView()
-
-	addRuleButton := createAddRuleButton(app, rulesList, pages)
-
-	setupCodeEditorEvents(codeEditor, position)
-
-	flex := setupLayout(codeEditor, position, rulesList, addRuleButton)
-
-	pages.AddPage("main", flex, true, true)
-
-	return app.SetRoot(pages, true).EnableMouse(true)
-}
-
-func setupLayout(
-	codeEditor *tview.TextArea,
-	position *tview.TextView,
-	rulesList *tview.List,
-	addRuleButton *tview.Button) *tview.Flex {
-	flex := tview.NewFlex().
-		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-			AddItem(codeEditor, 0, 1, true).
-			AddItem(position, 1, 0, false), 0, 2, true).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-			AddItem(tview.NewBox().SetBorder(true).SetTitle("TODO"), 0, 1, false).
-			AddItem(tview.NewBox().SetBorder(true).SetTitle("Answers"), 0, 3, false).
-			AddItem(tview.NewBox().SetBorder(true).SetTitle("Question"), 5, 1, false), 0, 2, false).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-			AddItem(rulesList, 0, 15, false).
-			AddItem(addRuleButton, 5, 1, false), 0, 2, false)
-
-	return flex
-}
 
 func createRulesListView() *tview.List {
 	rulesList := tview.NewList().
@@ -124,7 +84,7 @@ func createRuleForm(rulesList *tview.List, pages *tview.Pages) *tview.Form {
 		value := valueField.GetText()
 		result := resultField.GetText()
 
-		rule := CreateRule(identifier, operator, value, result)
+		rule := models.CreateRule(identifier, operator, value, result)
 
 		if rule == nil {
 			pages.RemovePage("add_rule_form")
@@ -149,42 +109,10 @@ func createRuleForm(rulesList *tview.List, pages *tview.Pages) *tview.Form {
 	return form
 }
 
-func AddRule(rulesList *tview.List, rule *Rule) {
+func AddRule(rulesList *tview.List, rule *models.Rule) {
 	rulesList.AddItem(rule.String(), "", 0, nil)
 }
 
-func addRule(rulesList *tview.List, rule *Rule) {
+func addRule(rulesList *tview.List, rule *models.Rule) {
 	rulesList.AddItem(rule.String(), "", 0, nil)
-}
-
-func createCodeEditor() *tview.TextArea {
-	codeEditor := tview.NewTextArea().
-		SetPlaceholder("Enter your code here...")
-
-	codeEditor.SetTitle("Code Editor").SetBorder(true)
-	codeEditor.SetBorderPadding(1, 1, 2, 2)
-
-	return codeEditor
-}
-
-func createPositionView() *tview.TextView {
-	position := tview.NewTextView().
-		SetDynamicColors(true).
-		SetTextAlign(tview.AlignRight)
-
-	return position
-}
-
-func setupCodeEditorEvents(codeEditor *tview.TextArea, position *tview.TextView) {
-	updateInfos := func() {
-		fromRow, fromColumn, toRow, toColumn := codeEditor.GetCursor()
-		if fromRow == toRow && fromColumn == toColumn {
-			position.SetText(fmt.Sprintf("Row: [yellow]%d[white], Column: [yellow]%d ", fromRow, fromColumn))
-		} else {
-			position.SetText(fmt.Sprintf("[red]From[white] Row: [yellow]%d[white], Column: [yellow]%d[white] - [red]To[white] Row: [yellow]%d[white], To Column: [yellow]%d ", fromRow, fromColumn, toRow, toColumn))
-		}
-	}
-
-	codeEditor.SetMovedFunc(updateInfos)
-	updateInfos()
 }

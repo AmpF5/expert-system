@@ -3,7 +3,7 @@ package main
 import "expert-system/ui"
 
 func main() {
-	app := ui.InitUI()
+	app := ui.InitMainWindow()
 
 	if err := app.Run(); err != nil {
 		panic(err)

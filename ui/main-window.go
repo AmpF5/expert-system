@@ -4,7 +4,7 @@ import (
 	"github.com/rivo/tview"
 )
 
-func InitUI() *tview.Application {
+func InitMainWindow() *tview.Application {
 	app := tview.NewApplication()
 
 	pages := tview.NewPages()

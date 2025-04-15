@@ -75,9 +75,6 @@ func createRulesListView() *tview.List {
 		rulesList.SetSelectedBackgroundColor(originalBgColor)
 	})
 
-	addRule(rulesList, "Rule 1: If temperature > 30°C then hot")
-	addRule(rulesList, "Rule 2: If sky = cloudy AND humidity > 80% then rain")
-
 	return rulesList
 }
 
@@ -88,7 +85,7 @@ func createAddRuleButton(app *tview.Application, rulesList *tview.List, pages *t
 
 			modal := tview.NewGrid().
 				SetColumns(0, 40, 0).
-				SetRows(0, 12, 0).
+				SetRows(0, 13, 0).
 				AddItem(form, 1, 1, 1, 1, 0, 0, true)
 
 			pages.AddPage("add_rule_form", modal, true, true)
@@ -112,21 +109,29 @@ func createRuleForm(rulesList *tview.List, pages *tview.Pages) *tview.Form {
 	form := tview.NewForm()
 
 	form.AddInputField("Identifier", "", 20, nil, nil)
-	form.AddInputField("Condition", "", 10, nil, nil)
+	form.AddInputField("Operator", "", 10, nil, nil)
 	form.AddInputField("Value", "", 20, nil, nil)
+	form.AddInputField("Result", "", 20, nil, nil)
 
 	form.AddButton("Save", func() {
 		conditionField := form.GetFormItemByLabel("Identifier").(*tview.InputField)
-		operatorField := form.GetFormItemByLabel("Condition").(*tview.InputField)
+		operatorField := form.GetFormItemByLabel("Operator").(*tview.InputField)
 		valueField := form.GetFormItemByLabel("Value").(*tview.InputField)
+		resultField := form.GetFormItemByLabel("Result").(*tview.InputField)
 
 		identifier := conditionField.GetText()
-		condition := operatorField.GetText()
+		operator := operatorField.GetText()
 		value := valueField.GetText()
+		result := resultField.GetText()
 
-		ruleText := fmt.Sprintf("%s %s %s", identifier, condition, value)
+		rule := CreateRule(identifier, operator, value, result)
 
-		AddRule(rulesList, ruleText)
+		if rule == nil {
+			pages.RemovePage("add_rule_form")
+			return
+		}
+
+		AddRule(rulesList, rule)
 
 		pages.RemovePage("add_rule_form")
 	})
@@ -144,12 +149,12 @@ func createRuleForm(rulesList *tview.List, pages *tview.Pages) *tview.Form {
 	return form
 }
 
-func AddRule(rulesList *tview.List, ruleText string) {
-	rulesList.AddItem(ruleText, "", 0, nil)
+func AddRule(rulesList *tview.List, rule *Rule) {
+	rulesList.AddItem(rule.String(), "", 0, nil)
 }
 
-func addRule(rulesList *tview.List, ruleText string) {
-	rulesList.AddItem(ruleText, "", 0, nil)
+func addRule(rulesList *tview.List, rule *Rule) {
+	rulesList.AddItem(rule.String(), "", 0, nil)
 }
 
 func createCodeEditor() *tview.TextArea {
